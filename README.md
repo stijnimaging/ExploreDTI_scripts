@@ -1,7 +1,8 @@
 # ExploreDTI_scripts
 This repository holds several explanations of ExploreDTI scripts.
-With help from the ExploreDTI forum; https://groups.google.com/forum/#!forum/e_dti
-Also credits to the Cardiff; http://sites.cardiff.ac.uk/cubric/cubric-users/user-documentation/mri-resources/mri-how-to/using-exploredti-via-the-command-line/
+* Note that several scripts need editing depending on your data!!
+* With help from the ExploreDTI forum; https://groups.google.com/forum/#!forum/e_dti
+* Also credits to the Cardiff; http://sites.cardiff.ac.uk/cubric/cubric-users/user-documentation/mri-resources/mri-how-to/using-exploredti-via-the-command-line/
 
 ## For batch analysing tracts:
 ```
@@ -44,11 +45,38 @@ dti_filename = E_DTI_Script_Get_DTI_folders(source_dir,target_dir)
 * target_dir = Directory to save DTI .mat file
 * dti_filename = Filename of the output .mat file.
 
+## Flip/permute nifti files
+```
+E_DTI_flip_permute_nii_file_exe(t1_filename_new,param);
+```
+* t1_filename_new= 'full_path_to_nii_file'.
+* param=[];
+* param.suff= '_FP';
+* param.permute= [1 2 3];
+* param.flip= [0 0 0];
+
+## Mask the background of the T1_FP files to zero to reduce the computation time of the EPI correction
+```
+E_DTI_mask_3D_nii_file_exe(t1_filename_new,paramaters);
+```
+* t1_filename_new= 'full_path_to_nii_file'.
+* paramaters.mfs=3; % Kernel size: 3     
+* paramaters.Threshold=0.02; % Threshold: 0.02
+You can play around with the threshold based on the SNR of your data, but I found that this suggested value works ok- it’s a 2% threshold
+
 ## SM/EC/EPI correction via .txt file
 ```
 E_DTI_SMECEPI_Main(parameter_filename);
 ```
 * parameter_filename = name of the text file containing the parameters for the SM/EC/EPI correction. The file is as saved in the GUI using Settings > SM/EC/EPI correction > Export parameter file. 
+* par.RESTORE_option = 1;
+* par.TE.NS = 4;
+* par.TE.TS = 4;
+* par.R2D.type = 3;
+* par.R2D.FN = '_T1_FP_masked.nii';
+* par.R2D.contrast = 2;
+* par.EPI.Num_Resol = 4;
+* par.EPI.Deriv_Scales = [1  0  0];
 
 ## Whole-brain tractography (dRL)
 ```
