@@ -15,13 +15,34 @@ dti_filename = E_DTI_Script_Get_DTI_folders(source_dir,target_dir)
 
 ## Flip/permute nifti files
 ```
-E_DTI_flip_permute_nii_file_exe(t1_filename_new,param);
+E_DTI_flip_permute_nii_file_exe(t1_filename_new,param,t1_filename_new);
 ```
 * t1_filename_new= 'full_path_to_nii_file'.
+t1_filename_new= 'full_path_to_new_nii_file'.
 * param=[];
 * param.suff= '_FP';
 * param.permute= [1 2 3];
 * param.flip= [0 0 0];
+* param.force_voxel_size = [2 2 2];
+
+## Generate B-matrix from .bval and .bvec files
+... has some work...
+* Use "textread" (or something equivalent) to read the *.bval/bvec files.
+```
+bval=textread('*.bval');
+bvec=textread('*.bvec');
+```
+* If you define the b-values (N x 1) as "bval" and b-vectors (N x 3) as "bvec", then the b-matrix (N x 6) - defined as "B" - is equal to:
+```
+B = bval(:,ones(1,6)).*[bvec(:,1).^2 2*bvec(:,1).*bvec(:,2) 2*bvec(:,1).*bvec(:,3) bvec(:,2).^2 2*bvec(:,2).*bvec(:,3) bvec(:,3).^2];
+```
+Then write it to a text file "B_matrix.txt" with:
+```fid = fopen('B_matrix.txt','wt');
+for i=1:size(B,1)    
+    fprintf(fid, '%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n',B(i,:));
+end
+fclose(fid);
+```
 
 ## Mask the background of the T1_FP files to zero to reduce the computation time of the EPI correction
 ```
@@ -31,6 +52,19 @@ E_DTI_mask_3D_nii_file_exe(t1_filename_new,paramaters);
 * paramaters.mfs=3; % Kernel size: 3     
 * paramaters.Threshold=0.02; % Threshold: 0.02
 You can play around with the threshold based on the SNR of your data, but I found that this suggested value works ok- it’s a 2% threshold
+
+## Quick and dirty nifti and b-matrix to .mat file
+```
+E_DTI_quick_and_dirty_DTI_convert_from_nii_txt_to_mat(f_DWI, f_BM, f_mat, Mask_par, NrB0)"
+```
+* f_DWI= *.nii(.gz) file name of the DWIs
+* f_BM= *.txt file name of the B-matrix
+* f_mat= *.mat file name of the DTI output
+* Mask_par= contains masking parameters... tune them at will: 
+* Mask_par.tune_NDWI = 0.7; % (rough range: [0.3 1.5])
+* Mask_par.tune_DWI = 0.7; % (rough range: [0.3 1.5])
+* Mask_par.mfs = 5; % (uneven integer)
+* NrB0= number of b=0 s/mm^2 images (note: these should be at the beginning of the 4D *.nii(.gz) file)
 
 ## For batch analysing tracts:
 ```
@@ -99,6 +133,24 @@ WholeBrainTrackingCSD_fast(filename_in, filename_out, parameters);
 * paramaters.AngleThresh = 30
 * paramaters.FiberLengthRange = [50 500]
 
+## Whole-brain tractography (CSD) extra options
+```
+WholeBrainTrackingCSD_fast_exe_CL(p);
+```
+* p.f_in = 'C:\Data\Sub_01_MD_C_native.mat'; % Change to your own input DTI file name.
+* p.f_out = 'C:\Data\Sub_01_MD_C_native_Tracts_CSD.mat'; % Change to your own output CSD tracts file name.
+* p.SeedPointRes = [2 2 2]; % Seed point resolution in mm.
+* p.StepSize = 1;
+* p.AngleThresh = 30;
+* p.lmax = 8; % for number of directions below 45 (and above 28), set to "6".
+* p.FiberLengthRange = [50 500];
+* p.blob_T = 0.1; % this is the FOD threshold (is somewhat equivalent to the FA threshold with DTI)
+* p.randp = 1;
+* p.t = 0.01; % Equal to "PR" variable in http://www.ncbi.nlm.nih.gov/pubmed/23927905.
+* p.it = 10;  % Number of iterations.
+* p.suf = 5; % Speed up factor (integer value > 0): 1 = slowest, 2 = faster, etc.(larger than 5, reliability may go down).
+* p.FA_t = 0.01; % The initial "fat" response function needs a slightly anisotropic shape (realistic range: [0.01 0.1])
+
 ## Sampling a volume along tracts
 ```
 E_DTI_Export_Tract_Volume_Info(nii_filename, tracts_filename,dti_filename, output_directory);
@@ -160,4 +212,30 @@ Or use the per DW image volume "i" parameters as defined by the variable "DM_inf
 * TransY(i) = DM_info{i}{1}(2,2);
 * TransZ(i) = DM_info{i}{1}(2,3);
 * ...
+
+## Gibbs ringing correction
+```
+suc = E_DTI_Gibbs_Ringing_removal_with_TV_exe(f_in,f_out,p); 
+```
+* suc = "1" (success!) and "0" (something went wrong...)
+
+* f_in = 'F:\Data\Temp\DWIs.nii'; % Full path input *.nii file name.
+* f_out = 'F:\Data\Temp\DWIs_GR_corrected.nii'; % Full path output file name.
+* p.NrB0 = 5; % The GR tool corrects only for the first "p.NrB0" volumes. Typically, the b=0 s/mm^2 images are affected most (so it was initially designed to correct only the "p.NrB0" non-DWIs in the beginning of the *.nii file), but you could also apply it to all DWI volumes (set "p.NrB0" then as the total number of DWIs).
+For the following parameter settings, see the paper: http://www.ncbi.nlm.nih.gov/pubmed/26142273 
+* p.lambda = 100; % rough range: [10 150] depending on voxel size / SNR etc.
+* p.iter = 100; % Idem... [10 200]
+* p.ss = 0.01; % Idem... [0.005 0.05] 
+* p.ip = 3; % Has value "1" (coronal), "2" (sagittal) or "3" (axial) for the acquisition plane.
+
+## Export DWI .mat file to .nii files
+Plugins -> Export stuff to *.nii files -> single -> DWIs with B0(s). 
+```
+E_DTI_Convert_mat_2_nii(filename_in, output_folder, {'DWIs with B0(s) (''_DWIs.nii'')'});
+```
+* filename_in= .mat file
+* output_folder= Directory to save .nii files to
+* DWIs with B0(s) - which data???
+* (''_DWIs.nii'') - suffix for .nii data
+
 
