@@ -55,7 +55,7 @@ You can play around with the threshold based on the SNR of your data, but I foun
 
 ## Quick and dirty nifti and b-matrix to .mat file
 ```
-E_DTI_quick_and_dirty_DTI_convert_from_nii_txt_to_mat(f_DWI, f_BM, f_mat, Mask_par, NrB0)"
+E_DTI_quick_and_dirty_DTI_convert_from_nii_txt_to_mat(f_DWI, f_BM, f_mat, Mask_par, NrB0, perm, flip)"
 ```
 * f_DWI= *.nii(.gz) file name of the DWIs
 * f_BM= *.txt file name of the B-matrix
@@ -65,6 +65,8 @@ E_DTI_quick_and_dirty_DTI_convert_from_nii_txt_to_mat(f_DWI, f_BM, f_mat, Mask_p
 * Mask_par.tune_DWI = 0.7; % (rough range: [0.3 1.5])
 * Mask_par.mfs = 5; % (uneven integer)
 * NrB0= number of b=0 s/mm^2 images (note: these should be at the beginning of the 4D *.nii(.gz) file)
+* perm = having values 1, 2, ... or 6 
+* flip = having values 1, 2, ... or 4 (order is the same as in the pop-up window when converting *.nii/txt to *.mat)
 
 ## For batch analysing tracts:
 ```
