@@ -43,6 +43,13 @@ for i=1:size(B,1)
 end
 fclose(fid);
 ```
+## Sort DWIs with respect to B-val
+```
+E_DTI_sort_DWIs_wrt_b_val_ex(fi_SB,'',fo_SB)
+```
+* fi_SB = full path to nifti _FP file; fullfile(Dir_Main, Dir_nii,[tmp_subj '_FP.nii']);
+* fo_SB = full path to nifti _FP_SB file; fullfile(Dir_Main, Dir_nii,[tmp_subj '_FP_SB.nii']);
+* Note that the second parameter has become redundant
 
 ## Mask the background of the T1_FP files to zero to reduce the computation time of the EPI correction
 ```
