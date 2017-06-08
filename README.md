@@ -247,4 +247,9 @@ E_DTI_Convert_mat_2_nii(filename_in, output_folder, {'DWIs with B0(s) (''_DWIs.n
 * DWIs with B0(s) - which data???
 * (''_DWIs.nii'') - suffix for .nii data
 
-
+## Calculate KA via the Poot et al. 2010 paper; DOI: 10.1109/TMI.2009.2037915 
+```
+KA = E_DTI_Kurtosis_Anisotropy(KT,DT)
+```
+* with "KT" and "DT" from the *.mat file 
+* KA = Kurtosis Anisotropy 
