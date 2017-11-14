@@ -1,0 +1,18 @@
+#!/bin/tcsh -f
+
+echo "file	minimum	maximum	robust min	robust max	mean	sd	median	0.5%	99.5%	first quartile	third quartile"
+set list = `ls *_mean_res_DWI_DT.nii*`
+foreach f ( $list )
+	set meanRes = `fslstats $f -M`
+	set sdRes = `fslstats $f -S`
+	set medianRes = `fslstats $f -P 50`
+	set firstQuartileRes = `fslstats $f -P 25`
+	set thirdQuartileRes = `fslstats $f -P 75`
+	set lower99PercRes = `fslstats $f -P 0.5`
+	set upper99PercRes = `fslstats $f -P 99.5`
+	set rangeRes = `fslstats $f -R`
+	set robustRangeRes = `fslstats $f -r`
+
+	echo "$f	$rangeRes[1]	$rangeRes[2]	$robustRangeRes[1]	$robustRangeRes[2]	$meanRes	$sdRes	$medianRes	$lower99PercRes	$upper99PercRes	$firstQuartileRes	$thirdQuartileRes"
+#break
+end
