@@ -175,7 +175,7 @@ E_DTI_Network_analysis_exe(dti_filename,tracts_filename,img_filename,A_T,A_L,L,V
 ```
 * dti_filename = name of the DTI .mat file
 * tracts_filename = name of the DTI tracts .mat file
-* img_filename = name of another image modality (e..g MWM; in the same space as the DTI data) to estimate weights for. Use [] to disable.
+* img_filename = name of another image modality (e.g. MWM; in the same space as the DTI data) to estimate weights for. Use [] to disable.
 * A_T = 3D volume of the atlas (e.g. AAL) reference template. Note this volume must be read into MATLAB using the command: A_T=E_DTI_load_nii(‘template_filename’)
 * A_L = 3D volume of the atlas (e.g. AAL) labels. As above, the volume need to be loaded into MATLAB * A_L=E_DTI_load_nii(‘labels_filename’)
 * L = cell array of label names for each region in A_L.
